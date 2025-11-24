@@ -62,7 +62,10 @@ def get_data():
             sort_order = 'DESC'
         
         # 允许排序的字段
-        allowed_sort_fields = ['id', 'capacity', 'annualCarbon', 'plant', 'country', 'status', 'year1']
+        allowed_sort_fields = ['id', 'lng', 'lat', 'annualCarbon', 'capacity', 'coalType',
+                              'country', 'plant', 'status', 'type', 'retire1', 'retire2',
+                              'retire3', 'start1', 'start2', 'year1', 'year2',
+                              'startLabel', 'regionLabel']
         if sort_by not in allowed_sort_fields:
             sort_by = 'id'
         
@@ -207,65 +210,71 @@ def get_data_by_id(id):
 
 @app.route('/data', methods=['POST'])
 def add_data():
-    """添加新数据"""
+    """添加新数据 - ID自动设置为最大ID+1"""
     try:
         data = request.get_json()
-        
+
         if not data:
             return jsonify({
                 'success': False,
                 'error': '参数错误',
                 'message': '请求体不能为空'
             }), 400
-        
+
         connection = get_db_connection()
         if not connection:
             return jsonify({
                 'success': False,
                 'error': '数据库连接失败'
             }), 500
-        
+
         try:
             with connection.cursor() as cursor:
-                fields = []
-                values = []
-                placeholders = []
-                
+                # 查询当前最大ID
+                cursor.execute("SELECT COALESCE(MAX(id), 0) as max_id FROM powerstation")
+                result = cursor.fetchone()
+                new_id = result['max_id'] + 1
+
+                # 构建字段列表和值列表
+                fields = ['id']  # ID字段必须包含
+                values = [new_id]
+                placeholders = ['%s']
+
                 # 允许的字段
-                allowed_fields = ['lng', 'lat', 'annualCarbon', 'capacity', 'coalType', 
-                                 'country', 'plant', 'status', 'type', 'retire1', 'retire2', 
-                                 'retire3', 'start1', 'start2', 'year1', 'year2', 
+                allowed_fields = ['lng', 'lat', 'annualCarbon', 'capacity', 'coalType',
+                                 'country', 'plant', 'status', 'type', 'retire1', 'retire2',
+                                 'retire3', 'start1', 'start2', 'year1', 'year2',
                                  'startLabel', 'regionLabel']
-                
+
                 for field in allowed_fields:
                     if field in data and data[field] is not None and data[field] != '':
                         fields.append(field)
                         values.append(data[field])
                         placeholders.append('%s')
-                
-                if not fields:
+
+                if len(fields) == 1:  # 只有ID字段
                     return jsonify({
                         'success': False,
                         'error': '参数错误',
                         'message': '没有提供有效的数据字段'
                     }), 400
-                
+
                 sql = f"""
-                INSERT INTO powerstation ({', '.join(fields)}) 
+                INSERT INTO powerstation ({', '.join(fields)})
                 VALUES ({', '.join(placeholders)})
                 """
                 cursor.execute(sql, values)
                 connection.commit()
-                
+
                 return jsonify({
                     'success': True,
                     'message': '数据添加成功',
-                    'id': cursor.lastrowid
+                    'id': new_id
                 })
-                
+
         finally:
             connection.close()
-            
+
     except Exception as e:
         print(f"添加数据时出错: {e}")
         return jsonify({

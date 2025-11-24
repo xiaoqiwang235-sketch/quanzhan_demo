@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(nul)",
+      "Bash(dir /B /S *.js *.jsx 2)",
+      "Bash(findstr:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

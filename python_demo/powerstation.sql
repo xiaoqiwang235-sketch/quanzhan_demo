@@ -22,7 +22,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `powerstation`;
 CREATE TABLE `powerstation` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `lng` double DEFAULT NULL,
   `lat` double DEFAULT NULL,
   `annualCarbon` double DEFAULT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE `powerstation` (
   `startLabel` varchar(200) DEFAULT NULL,
   `regionLabel` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5295 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of powerstation
