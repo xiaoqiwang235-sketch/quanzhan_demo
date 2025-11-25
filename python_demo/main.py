@@ -3,15 +3,18 @@ import pymysql
 import pymysql.cursors
 from flask_cors import CORS
 from datetime import datetime
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
+password = os.getenv("mysql_password")
 app = Flask(__name__)
 CORS(app)  # 允许跨域请求
-
+print("PASSWORD",password)
 # 数据库配置
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'Wxp1314520!',  # 请修改为你的MySQL密码
+    'password': password,  # 请修改为你的MySQL密码
     'database': 'quanzhan_demo',  # 请修改为你的数据库名
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.DictCursor

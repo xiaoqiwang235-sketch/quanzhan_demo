@@ -1,11 +1,12 @@
 import subprocess
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 # 数据库配置
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'Wxp1314520!',  # 请修改为你的MySQL密码
+    'password': os.getenv("mysql_password"),  # 请修改为你的MySQL密码
     'database': 'quanzhan_demo'
 }
 

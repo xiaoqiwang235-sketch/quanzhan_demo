@@ -5,7 +5,8 @@
       "Bash(timeout:*)",
       "Bash(nul)",
       "Bash(dir /B /S *.js *.jsx 2)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
