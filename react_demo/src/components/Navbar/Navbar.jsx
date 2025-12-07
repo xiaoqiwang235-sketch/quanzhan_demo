@@ -1,5 +1,6 @@
 import React from 'react';
-import { Terminal } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { Terminal, Database, MessageCircle } from 'lucide-react';
 import { themes } from '../../constants/themes';
 
 export const Navbar = ({ theme, setTheme, currentTheme }) => {
@@ -14,6 +15,36 @@ export const Navbar = ({ theme, setTheme, currentTheme }) => {
             <h1 className={`text-xl font-bold ${c.text}`}>
               Power Station Database
             </h1>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <NavLink
+              to="/qa"
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-4 py-2 rounded transition-all ${
+                  isActive
+                    ? `${c.primary} text-white shadow-lg`
+                    : `${c.text} ${c.secondaryHover}`
+                }`
+              }
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span className="font-medium">小王问答</span>
+            </NavLink>
+
+            <NavLink
+              to="/data"
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-4 py-2 rounded transition-all ${
+                  isActive
+                    ? `${c.primary} text-white shadow-lg`
+                    : `${c.text} ${c.secondaryHover}`
+                }`
+              }
+            >
+              <Database className="w-5 h-5" />
+              <span className="font-medium">数据展示</span>
+            </NavLink>
           </div>
 
           <div className="flex items-center gap-2">

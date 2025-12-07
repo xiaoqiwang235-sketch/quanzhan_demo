@@ -5,6 +5,8 @@ from flask_cors import CORS
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from qa_handler import qa_handler
+
 load_dotenv()
 password = os.getenv("mysql_password")
 app = Flask(__name__)
@@ -483,17 +485,155 @@ def test_connection():
             'message': f'连接测试失败: {str(e)}'
         }), 500
 
+@app.route('/qa/ask', methods=['POST'])
+def ask_question():
+    """
+    问答接口
+    接收前端的问题，返回AI回答
+
+    请求体:
+    {
+        "question": "用户的问题",
+        "user_id": "用户ID（可选）"
+    }
+
+    返回:
+    {
+        "success": true,
+        "answer": "AI的回答",
+        "question": "用户的问题",
+        "timestamp": "时间戳"
+    }
+    """
+    try:
+        data = request.get_json()
+
+        if not data or 'question' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'missing_question',
+                'message': '请提供问题内容'
+            }), 400
+
+        question = data.get('question', '').strip()
+        user_id = data.get('user_id', None)
+
+        if not question:
+            return jsonify({
+                'success': False,
+                'error': 'empty_question',
+                'message': '问题不能为空'
+            }), 400
+
+        # 调用问答处理器
+        result = qa_handler.process_question(question, user_id)
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'server_error',
+            'message': f'处理问题时出错: {str(e)}'
+        }), 500
+
+@app.route('/qa/history', methods=['GET'])
+def get_qa_history():
+    """
+    获取对话历史
+
+    参数:
+    - limit: 返回的历史记录数量 (默认: 10)
+
+    返回:
+    {
+        "success": true,
+        "history": [...]
+    }
+    """
+    try:
+        limit = request.args.get('limit', 10, type=int)
+        history = qa_handler.get_conversation_history(limit)
+
+        return jsonify({
+            'success': True,
+            'history': history,
+            'count': len(history)
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'server_error',
+            'message': f'获取历史记录时出错: {str(e)}'
+        }), 500
+
+@app.route('/qa/clear', methods=['POST'])
+def clear_qa_history():
+    """
+    清空对话历史
+
+    返回:
+    {
+        "success": true,
+        "message": "对话历史已清空"
+    }
+    """
+    try:
+        result = qa_handler.clear_history()
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'server_error',
+            'message': f'清空历史记录时出错: {str(e)}'
+        }), 500
+
+@app.route('/qa/test-ollama', methods=['GET'])
+def test_ollama():
+    """
+    测试Ollama连接
+
+    返回:
+    {
+        "success": true/false,
+        "message": "连接状态",
+        "available_models": [...],
+        "target_model": "deepseek-r1:32b",
+        "model_exists": true/false
+    }
+    """
+    try:
+        result = qa_handler.test_ollama_connection()
+        status_code = 200 if result.get('success') else 500
+        return jsonify(result), status_code
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'server_error',
+            'message': f'测试Ollama连接时出错: {str(e)}'
+        }), 500
+
 if __name__ == '__main__':
     print("启动服务器...")
     print("API 接口地址: http://127.0.0.1:8899")
     print("=" * 60)
     print("可用接口:")
-    print("  GET  /data - 分页查询数据 (支持search, sortBy, sortOrder)")
-    print("  GET  /data/<id> - 获取单条数据")
-    print("  POST /data - 添加新数据")
-    print("  PUT  /data/<id> - 更新数据")
-    print("  DELETE /data/<id> - 删除单条数据")
-    print("  POST /data/batch - 批量删除数据")
-    print("  GET  /test-connection - 测试连接")
+    print("  数据管理:")
+    print("    GET  /data - 分页查询数据 (支持search, sortBy, sortOrder)")
+    print("    GET  /data/<id> - 获取单条数据")
+    print("    POST /data - 添加新数据")
+    print("    PUT  /data/<id> - 更新数据")
+    print("    DELETE /data/<id> - 删除单条数据")
+    print("    POST /data/batch - 批量删除数据")
+    print("  问答功能:")
+    print("    POST /qa/ask - 提问接口 (Ollama DeepSeek-R1:32b)")
+    print("    GET  /qa/history - 获取对话历史")
+    print("    POST /qa/clear - 清空对话历史")
+    print("    GET  /qa/test-ollama - 测试Ollama连接")
+    print("  系统:")
+    print("    GET  /test-connection - 测试数据库连接")
     print("=" * 60)
     app.run(host='127.0.0.1', port=8899, debug=True)
